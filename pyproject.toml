@@ -1,0 +1,27 @@
+[tool.poetry]
+name = "vzenith-camera"
+version = "0.1.0"
+description = "A Python library for VisionZenith Smart Camera SDK in TCP protocol."
+authors = ["Garrett HE <garrett.he@hotmail.com>"]
+license = "BSD-3-Clause"
+readme = "README.md"
+homepage = "https://github.com/garrett-he/vzenith-camera"
+repository = "https://github.com/garrett-he/vzenith-camera.git"
+keywords = ["smart-camera", "license-plate-recognition", "intelligent-video-system", "vision-zenith"]
+packages = [{ include = "vzenith_camera", from = "src" }]
+classifiers = []
+
+[tool.poetry.dependencies]
+python = "^3.8,<3.12"
+
+[tool.poetry.group.dev.dependencies]
+chance = "^0.110"
+pre-commit = "^3.4.0"
+pylint = "^2.17.6"
+pytest = "^7.4.2"
+pytest-cov = "^4.1.0"
+tox = "^4.11.3"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
