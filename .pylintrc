@@ -4,7 +4,7 @@ suggestion-mode=yes
 disable=missing-module-docstring,missing-class-docstring,missing-function-docstring,too-few-public-methods
 
 [BASIC]
-good-names=i,j,k,s,fp
+good-names=i,j,k,n,s,fp,sn
 
 [FORMAT]
 expected-line-ending-format=LF
