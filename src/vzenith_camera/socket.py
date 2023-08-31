@@ -68,9 +68,7 @@ def socket_send(sock: socket, packet_type: int, body: Optional[Any] = None, sn: 
 def socket_recv(sock: socket, blocking: bool = True) -> Packet:
     header = socket_recv_header(sock, blocking)
 
-    body = json.loads(
-        socket_recv_buffer(sock, header.length, blocking).decode('ascii')
-    ) if header.type != PACKET_TYPE_HEARTBEAT else None
+    body = socket_recv_buffer(sock, header.length, blocking) if header.type != PACKET_TYPE_HEARTBEAT else None
 
     return Packet(header=header, body=body)
 
