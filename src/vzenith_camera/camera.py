@@ -3,6 +3,7 @@ import logging
 import time
 from socket import socket, AF_INET, SOCK_STREAM
 from threading import Thread
+from typing import Tuple
 
 from .socket import PACKET_TYPE_TEXT, TEXT_ENCODING, socket_send_heartbeat, socket_send, socket_recv
 from .types import PlateResult
@@ -18,7 +19,7 @@ class BaseCamera:
         self.name = name
         self.socket = socket(AF_INET, SOCK_STREAM)
 
-    def connect(self, address: tuple[str, int], keepalive: bool = False):
+    def connect(self, address: Tuple[str, int], keepalive: bool = False):
         logging.debug('connect to %s (%s)', self.name, address)
         self.socket.connect(address)
         self.keepalive = keepalive
