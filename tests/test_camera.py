@@ -5,6 +5,8 @@ from unittest.mock import patch
 
 from vzenith_camera.socket import TEXT_ENCODING
 from vzenith_camera.camera import SmartCamera
+from vzenith_camera.emitter import Event
+from vzenith_camera.types import PlateResult
 
 
 def test_camera_heartbeat(camera: SmartCamera):
@@ -62,3 +64,54 @@ def test_camera_cmd_getivsresult(camera: SmartCamera):
 
             send_mock.assert_called_with(
                 b'VZ\x00\x00\x00\x00\x009{"cmd": "getivsresult", "image": false, "format": "json"}')
+
+
+def test_camera_cmd_ivsresult(camera: SmartCamera):
+    req_body = json.dumps({
+        'cmd': 'ivsresult',
+        'enable': True,
+        'format': 'json',
+        'image': True,
+        'image_type': 0
+    }).encode(TEXT_ENCODING)
+    req_header = b'VZ\x00\x00' + len(req_body).to_bytes(4, 'big')
+
+    res_body = json.dumps({'cmd': 'ivsresult', 'state_code': 200}).encode(TEXT_ENCODING)
+    res_header = b'VZ\x00\x00' + len(res_body).to_bytes(4, 'big')
+
+    def recv_fn(n: int):
+        if n == 8:
+            return res_header
+
+        return res_body
+
+    with patch.object(socket, 'send') as send_mock:
+        with patch.object(socket, 'recv', side_effect=recv_fn):
+            with patch.object(Thread, 'start') as thread_start_mock:
+                camera.cmd_ivsresult(True)
+
+                send_mock.assert_called_with(req_header + req_body)
+                thread_start_mock.assert_called_once()
+
+
+def test_camera_ivsresult_thread(camera: SmartCamera):
+    res_body = json.dumps({'PlateResult': {'license': 'T12345'}}).encode(TEXT_ENCODING) + b'\n\x00'
+    res_header = b'VZ\x00\x00' + len(res_body).to_bytes(4, 'big')
+
+    def recv_fn(*args, **_):
+        if args[0] == 8:
+            return res_header
+
+        return res_body
+
+    def ivsresult_callback(event: Event, plate_result: PlateResult):
+        assert event.target == camera
+        assert plate_result.license == 'T12345'
+
+        camera.ivsresult_enabled = False
+
+    camera.on('ivsresult', ivsresult_callback)
+
+    with patch.object(socket, 'send'):
+        with patch.object(socket, 'recv', side_effect=recv_fn):
+            camera.cmd_ivsresult(True)
