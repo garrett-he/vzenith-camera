@@ -46,7 +46,11 @@ class SmartCamera(BaseCamera):
     def cmd_getsn(self) -> str:
         socket_send(self.socket, PACKET_TYPE_TEXT, {'cmd': 'getsn'})
 
-        return json.loads(socket_recv(self.socket).body.decode(TEXT_ENCODING))['value']
+        res = json.loads(socket_recv(self.socket).body.decode(TEXT_ENCODING))
+
+        check_response_status(res)
+
+        return res['value']
 
     def cmd_getivsresult(self, image: bool = False, result_format: str = 'json'):
         socket_send(self.socket, PACKET_TYPE_TEXT, {'cmd': 'getivsresult', 'image': image, 'format': result_format})
@@ -90,3 +94,53 @@ class SmartCamera(BaseCamera):
                 ...
 
             time.sleep(1)
+
+
+def check_response_status(res: dict):
+    if 'state_code' not in res:
+        raise BadResponse(res)
+
+    if res['state_code'] == 400:
+        raise BadRequest(res)
+    if res['state_code'] == 401:
+        raise Unauthorized(res)
+    if res['state_code'] == 404:
+        raise NotFound(res)
+    if res['state_code'] == 405:
+        raise MethodNotAllowed(res)
+    if res['state_code'] == 408:
+        raise RequestTimeout(res)
+    if res['state_code'] == 500:
+        raise InternalServerError(res)
+
+
+class BadResponse(ValueError):
+    ...
+
+
+class ResponseError(RuntimeError):
+    ...
+
+
+class BadRequest(ResponseError):
+    ...
+
+
+class Unauthorized(ResponseError):
+    ...
+
+
+class NotFound(ResponseError):
+    ...
+
+
+class MethodNotAllowed(ResponseError):
+    ...
+
+
+class RequestTimeout(ResponseError):
+    ...
+
+
+class InternalServerError(ResponseError):
+    ...
