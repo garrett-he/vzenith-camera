@@ -9,7 +9,18 @@ homepage = "https://github.com/garrett-he/vzenith-camera"
 repository = "https://github.com/garrett-he/vzenith-camera.git"
 keywords = ["smart-camera", "license-plate-recognition", "intelligent-video-system", "vision-zenith"]
 packages = [{ include = "vzenith_camera", from = "src" }]
-classifiers = []
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: BSD License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: System :: Monitoring",
+]
 
 [tool.poetry.dependencies]
 python = "^3.8,<3.12"
