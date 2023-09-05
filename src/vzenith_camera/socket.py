@@ -65,8 +65,10 @@ def socket_send(sock: socket, packet_type: int, body: Optional[Any] = None, sn: 
     socket_send_buffer(sock, header + buff)
 
 
-def socket_recv(sock: socket, blocking: bool = True) -> Packet:
+def socket_recv(sock: socket, blocking: bool = True, skip_heartbeat: bool = False) -> Packet:
     header = socket_recv_header(sock, blocking)
+    if skip_heartbeat and header.type == PACKET_TYPE_HEARTBEAT:
+        header = socket_recv_header(sock, blocking)
 
     body = socket_recv_buffer(sock, header.length, blocking) if header.type != PACKET_TYPE_HEARTBEAT else None
 

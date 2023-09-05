@@ -6,8 +6,8 @@ from threading import Thread
 from typing import Tuple
 
 from .emitter import Emitter
-from .socket import PACKET_TYPE_TEXT, PACKET_TYPE_HEARTBEAT, TEXT_ENCODING
-from .socket import socket_send_heartbeat, socket_send, socket_recv
+from .socket import PACKET_TYPE_TEXT, TEXT_ENCODING
+from .socket import socket_send_heartbeat, socket_send, socket_recv, BadPacketHeader
 from .types import PlateResult
 
 
@@ -46,7 +46,7 @@ class SmartCamera(BaseCamera):
     def cmd_getsn(self) -> str:
         socket_send(self.socket, PACKET_TYPE_TEXT, {'cmd': 'getsn'})
 
-        res = json.loads(socket_recv(self.socket).body.decode(TEXT_ENCODING))
+        res = json.loads(socket_recv(self.socket, skip_heartbeat=True).body.decode(TEXT_ENCODING))
 
         check_response_status(res)
 
@@ -54,7 +54,7 @@ class SmartCamera(BaseCamera):
 
     def cmd_getivsresult(self, image: bool = False, result_format: str = 'json'):
         socket_send(self.socket, PACKET_TYPE_TEXT, {'cmd': 'getivsresult', 'image': image, 'format': result_format})
-        s = socket_recv(self.socket).body
+        s = socket_recv(self.socket, skip_heartbeat=True).body
         res = json.loads(s[0:s.index(0x00) - 1].decode(TEXT_ENCODING))['PlateResult']
 
         return PlateResult(
@@ -71,7 +71,7 @@ class SmartCamera(BaseCamera):
         }
 
         socket_send(self.socket, PACKET_TYPE_TEXT, cmd)
-        socket_recv(self.socket)
+        socket_recv(self.socket, skip_heartbeat=True)
 
         if enable:
             self.ivsresult_enabled = True
@@ -80,9 +80,7 @@ class SmartCamera(BaseCamera):
     def _ivsresult_thread(self):
         while self.ivsresult_enabled:
             try:
-                packet = socket_recv(self.socket, blocking=False)
-                if packet.header.type == PACKET_TYPE_HEARTBEAT:
-                    continue
+                packet = socket_recv(self.socket, blocking=False, skip_heartbeat=True)
 
                 pr = json.loads(packet.body[0:packet.body.index(0x00) - 1].decode('gb2312'))['PlateResult']
                 result = PlateResult(
@@ -90,7 +88,7 @@ class SmartCamera(BaseCamera):
                 )
 
                 self.emit('ivsresult', result)
-            except BlockingIOError:
+            except (BlockingIOError, BadPacketHeader):
                 ...
 
             time.sleep(1)
