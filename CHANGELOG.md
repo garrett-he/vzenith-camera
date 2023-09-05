@@ -8,6 +8,12 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.2.1] - 2023-09-05
+
+### Fixed
+
+- Receiving heartbeat as data packets.
+
 ## [0.2.0] - 2023-09-03
 
 ### Added
