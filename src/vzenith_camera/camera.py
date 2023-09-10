@@ -6,8 +6,8 @@ from threading import Thread
 from typing import Tuple
 
 from .emitter import Emitter
-from .socket import PACKET_TYPE_TEXT, TEXT_ENCODING
-from .socket import socket_send_heartbeat, socket_send, socket_recv, BadPacketHeader
+from .socket import BadPacketHeader, socket_send_heartbeat, socket_send, socket_recv
+from .socket import PACKET_TYPE_TEXT, PACKET_TYPE_HEARTBEAT, TEXT_ENCODING
 from .types import PlateResult
 
 
@@ -54,12 +54,19 @@ class SmartCamera(BaseCamera):
 
     def cmd_getivsresult(self, image: bool = False, result_format: str = 'json'):
         socket_send(self.socket, PACKET_TYPE_TEXT, {'cmd': 'getivsresult', 'image': image, 'format': result_format})
-        s = socket_recv(self.socket, skip_heartbeat=True).body
-        res = json.loads(s[0:s.index(0x00) - 1].decode(TEXT_ENCODING))['PlateResult']
 
-        return PlateResult(
-            license=res['license']
-        )
+        while True:
+            packet = socket_recv(self.socket)
+
+            if packet.header.type == PACKET_TYPE_HEARTBEAT:
+                continue
+
+            s = packet.body
+            res = json.loads(s[0:s.index(0x00) - 1].decode(TEXT_ENCODING))['PlateResult']
+
+            return PlateResult(
+                license=res['license']
+            )
 
     def cmd_ivsresult(self, enable: bool = False, result_format: str = 'json', image: bool = True, image_type: int = 0):
         cmd = {
