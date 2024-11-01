@@ -7,3 +7,10 @@ and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [0.1.0] - 2023-09-01
+
+### Added
+
+- `SmartCamera.cmd_getsn` to get serial number of camera.
+- `SmartCamera.cmd_getivsresult` to get last license reorganization result.
