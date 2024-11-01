@@ -45,3 +45,20 @@ def test_camera_cmd_getsn(camera: SmartCamera):
             assert camera.cmd_getsn() == '00000000-ffffffff'
 
             send_mock.assert_called_with(b'VZ\x00\x00\x00\x00\x00\x10{"cmd": "getsn"}')
+
+
+def test_camera_cmd_getivsresult(camera: SmartCamera):
+    buff = json.dumps({'PlateResult': {'license': 'T12345'}}).encode(TEXT_ENCODING) + b'\n\x00'
+
+    def recv_fn(n: int):
+        if n == 8:
+            return b'VZ\x00\x00' + len(buff).to_bytes(4, 'big')
+
+        return buff
+
+    with patch.object(socket, 'send') as send_mock:
+        with patch.object(socket, 'recv', side_effect=recv_fn):
+            assert camera.cmd_getivsresult().license == 'T12345'
+
+            send_mock.assert_called_with(
+                b'VZ\x00\x00\x00\x00\x009{"cmd": "getivsresult", "image": false, "format": "json"}')

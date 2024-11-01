@@ -59,7 +59,7 @@ def test_socket_recv(sock: socket):
         return buff
 
     with patch.object(socket, 'recv', side_effect=recv_fn), patch.object(logging, 'debug') as mock_debug:
-        assert socket_recv(sock).body == body
+        assert socket_recv(sock).body == buff
         mock_debug.assert_called_with('recv %s from %s', buff, sock.getpeername())
 
 
