@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "vzenith-camera"
-version = "0.1.0"
+version = "0.1.1"
 description = "A Python library for VisionZenith Smart Camera SDK in TCP protocol."
 authors = ["Garrett HE <garrett.he@hotmail.com>"]
 license = "BSD-3-Clause"
