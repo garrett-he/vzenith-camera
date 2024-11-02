@@ -25,10 +25,15 @@ class BaseCamera:
         self.keepalive = keepalive
 
         if keepalive:
-            Thread(target=_thread_keepalive, name=f'thread-keepalive:{self.name}', args=(self,)).start()
+            Thread(target=self._keepalive_thread, name=f'keepalive:{self.name}').start()
 
     def heartbeat(self):
         socket_send_heartbeat(self.socket)
+
+    def _keepalive_thread(self, interval: float = 5.0):
+        while self.keepalive:
+            self.heartbeat()
+            time.sleep(interval)
 
 
 class SmartCamera(BaseCamera):
@@ -46,9 +51,3 @@ class SmartCamera(BaseCamera):
         return PlateResult(
             license=res['license']
         )
-
-
-def _thread_keepalive(camera: SmartCamera, interval: float = 5.0):
-    while camera.keepalive:
-        camera.heartbeat()
-        time.sleep(interval)
