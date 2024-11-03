@@ -8,6 +8,12 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.2.0] - 2023-09-03
+
+### Added
+
+- `SmartCamera.cmd_ivsresult` to monitor license reorganization result.
+
 ## [0.1.1] - 2023-09-02
 
 ### Fixed
