@@ -3,8 +3,10 @@ from socket import socket
 from threading import Thread
 from unittest.mock import patch
 
+import pytest
 from vzenith_camera.socket import TEXT_ENCODING
-from vzenith_camera.camera import SmartCamera
+from vzenith_camera.camera import SmartCamera, BadRequest, BadResponse, Unauthorized, NotFound, MethodNotAllowed, \
+    RequestTimeout, InternalServerError, check_response_status
 from vzenith_camera.emitter import Event
 from vzenith_camera.types import PlateResult
 
@@ -115,3 +117,33 @@ def test_camera_ivsresult_thread(camera: SmartCamera):
     with patch.object(socket, 'send'):
         with patch.object(socket, 'recv', side_effect=recv_fn):
             camera.cmd_ivsresult(True)
+
+
+def test_check_response_status():
+    res = {}
+    with pytest.raises(BadResponse):
+        check_response_status(res)
+
+    res = {'state_code': 400}
+    with pytest.raises(BadRequest):
+        check_response_status(res)
+
+    res = {'state_code': 401}
+    with pytest.raises(Unauthorized):
+        check_response_status(res)
+
+    res = {'state_code': 404}
+    with pytest.raises(NotFound):
+        check_response_status(res)
+
+    res = {'state_code': 405}
+    with pytest.raises(MethodNotAllowed):
+        check_response_status(res)
+
+    res = {'state_code': 408}
+    with pytest.raises(RequestTimeout):
+        check_response_status(res)
+
+    res = {'state_code': 500}
+    with pytest.raises(InternalServerError):
+        check_response_status(res)
